@@ -1,0 +1,459 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Basketball Tracker – Full Features</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f8b133; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; background: white; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    .button-container { display: flex; justify-content: space-around; }
+    button { padding: 5px 10px; }
+    .totals-row { font-weight: bold; background: #eee; }
+    h2 { margin-top: 40px; }
+    #summary { font-size: 1.2em; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+<div style="display:flex; justify-content:center; margin-bottom:10px;">
+  <button onclick="adjustZoom(-0.1)" style="margin-right:5px;">Zoom Out</button>
+  <button onclick="adjustZoom(0.1)">Zoom In</button>
+</div>
+  <h2>Basketball Stat Tracker</h2>
+  
+
+<div style="margin: 20px 0;">
+  <button onclick="resetStats()">Reset All Stats</button><br><br>
+  
+<button onclick="exportCombinedCSV()">Export All Stats to CSV</button>
+
+</div>
+<div id="summary">
+    Home Score: <span id="homeScore">0</span> |
+    Opponent Score: <span id="opponentScore">0</span>
+  </div>
+
+  <h3>Home Team</h3>
+  <button onclick="addPlayer('home')">Add Home Player</button>
+  <table>
+    <thead>
+      <tr>
+        <th>Player</th>
+        <th>2PMissed</th><th>2PM</th><th>3PMissed</th><th>3PM</th>
+        <th>FTMissed</th><th>FTM</th><th>OREB</th><th>DREB</th><th>STL</th>
+        <th>BLK</th><th>TO</th><th>Fouls</th><th>Assists</th><th>2P%</th><th>3P%</th><th>FG%</th><th>FT%</th><th>Total Points</th>
+      </tr>
+    </thead>
+    <tbody id="homeStats"></tbody>
+    <tfoot>
+      <tr class="totals-row">
+        <td>Totals</td>
+        <td id="t-home-2pmissed">0</td><td id="t-home-2pm">0</td><td id="t-home-3pmissed">0</td><td id="t-home-3pm">0</td>
+        <td id="t-home-ftmissed">0</td><td id="t-home-ftm">0</td><td id="t-home-oreb">0</td><td id="t-home-dreb">0</td><td id="t-home-stl">0</td>
+        <td id="t-home-blk">0</td><td id="t-home-to">0</td><td id="t-home-fouls">0</td><td id="t-home-assists">0</td>
+        <td id="t-home-2ppct">0%</td><td id="t-home-3ppct">0%</td><td id="t-home-fgpct">0%</td><td id="t-home-ftpct">0%</td><td id="t-home-totalpoints">0</td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <h3>Opponent Team</h3>
+  <button onclick="addPlayer('opponent')">Add Opponent Player</button>
+  <table>
+    <thead>
+      <tr>
+        <th>Player</th>
+        <th>2PMissed</th><th>2PM</th><th>3PMissed</th><th>3PM</th>
+        <th>FTMissed</th><th>FTM</th><th>OREB</th><th>DREB</th><th>STL</th>
+        <th>BLK</th><th>TO</th><th>Fouls</th><th>Assists</th><th>2P%</th><th>3P%</th><th>FG%</th><th>FT%</th><th>Total Points</th>
+      </tr>
+    </thead>
+    <tbody id="opponentStats"></tbody>
+    <tfoot>
+      <tr class="totals-row">
+        <td>Totals</td>
+        <td id="t-opponent-2pmissed">0</td><td id="t-opponent-2pm">0</td><td id="t-opponent-3pmissed">0</td><td id="t-opponent-3pm">0</td>
+        <td id="t-opponent-ftmissed">0</td><td id="t-opponent-ftm">0</td><td id="t-opponent-oreb">0</td><td id="t-opponent-dreb">0</td><td id="t-opponent-stl">0</td>
+        <td id="t-opponent-blk">0</td><td id="t-opponent-to">0</td><td id="t-opponent-fouls">0</td><td id="t-opponent-assists">0</td>
+        <td id="t-opponent-2ppct">0%</td><td id="t-opponent-3ppct">0%</td><td id="t-opponent-fgpct">0%</td><td id="t-opponent-ftpct">0%</td><td id="t-opponent-totalpoints">0</td>
+      </tr>
+    </tfoot>
+  </table>
+
+<script>
+const statKeys = ["2pmissed", "2pm", "3pmissed", "3pm", "ftmissed", "ftm", "oreb", "dreb", "stl", "blk", "to", "fouls", "assists"];
+let players = {
+  home: [
+    { name: "Kam", "2pmissed": 0, "2pm": 0, "3pmissed": 0, "3pm": 0, "ftmissed": 0, "ftm": 0,
+      "oreb": 0, "dreb": 0, "stl": 0, "blk": 0, "to": 0, "fouls": 0, "assists": 0, totalPoints: 0 },
+    { name: "Ronald", "2pmissed": 0, "2pm": 0, "3pmissed": 0, "3pm": 0, "ftmissed": 0, "ftm": 0,
+      "oreb": 0, "dreb": 0, "stl": 0, "blk": 0, "to": 0, "fouls": 0, "assists": 0, totalPoints: 0 },
+    { name: "Jaedyn", "2pmissed": 0, "2pm": 0, "3pmissed": 0, "3pm": 0, "ftmissed": 0, "ftm": 0,
+      "oreb": 0, "dreb": 0, "stl": 0, "blk": 0, "to": 0, "fouls": 0, "assists": 0, totalPoints: 0 },
+    { name: "Khalifa", "2pmissed": 0, "2pm": 0, "3pmissed": 0, "3pm": 0, "ftmissed": 0, "ftm": 0,
+      "oreb": 0, "dreb": 0, "stl": 0, "blk": 0, "to": 0, "fouls": 0, "assists": 0, totalPoints: 0 },
+    { name: "Eli", "2pmissed": 0, "2pm": 0, "3pmissed": 0, "3pm": 0, "ftmissed": 0, "ftm": 0,
+      "oreb": 0, "dreb": 0, "stl": 0, "blk": 0, "to": 0, "fouls": 0, "assists": 0, totalPoints: 0 },
+    { name: "Sammy", "2pmissed": 0, "2pm": 0, "3pmissed": 0, "3pm": 0, "ftmissed": 0, "ftm": 0,
+      "oreb": 0, "dreb": 0, "stl": 0, "blk": 0, "to": 0, "fouls": 0, "assists": 0, totalPoints: 0 },
+    { name: "Ceasar", "2pmissed": 0, "2pm": 0, "3pmissed": 0, "3pm": 0, "ftmissed": 0, "ftm": 0,
+      "oreb": 0, "dreb": 0, "stl": 0, "blk": 0, "to": 0, "fouls": 0, "assists": 0, totalPoints: 0 },
+    { name: "Juice", "2pmissed": 0, "2pm": 0, "3pmissed": 0, "3pm": 0, "ftmissed": 0, "ftm": 0,
+      "oreb": 0, "dreb": 0, "stl": 0, "blk": 0, "to": 0, "fouls": 0, "assists": 0, totalPoints: 0 },
+    { name: "Ben", "2pmissed": 0, "2pm": 0, "3pmissed": 0, "3pm": 0, "ftmissed": 0, "ftm": 0,
+      "oreb": 0, "dreb": 0, "stl": 0, "blk": 0, "to": 0, "fouls": 0, "assists": 0, totalPoints: 0 },
+    { name: "Noah", "2pmissed": 0, "2pm": 0, "3pmissed": 0, "3pm": 0, "ftmissed": 0, "ftm": 0,
+      "oreb": 0, "dreb": 0, "stl": 0, "blk": 0, "to": 0, "fouls": 0, "assists": 0, totalPoints: 0 },
+    { name: "Lefty", "2pmissed": 0, "2pm": 0, "3pmissed": 0, "3pm": 0, "ftmissed": 0, "ftm": 0,
+      "oreb": 0, "dreb": 0, "stl": 0, "blk": 0, "to": 0, "fouls": 0, "assists": 0, totalPoints: 0 },
+    { name: "Goose", "2pmissed": 0, "2pm": 0, "3pmissed": 0, "3pm": 0, "ftmissed": 0, "ftm": 0,
+      "oreb": 0, "dreb": 0, "stl": 0, "blk": 0, "to": 0, "fouls": 0, "assists": 0, totalPoints: 0 }
+  ],
+  opponent: []
+};
+
+function calculateTotalPoints(p) {
+  return p["2pm"] * 2 + p["3pm"] * 3 + p["ftm"];
+}
+
+function addPlayer(team) {
+  let name = prompt("Enter player name:");
+  if (!name || name.trim() === "") {
+    name = "New Player";
+  }
+  const player = { name };
+  statKeys.forEach(k => player[k] = 0);
+  player.totalPoints = 0;
+  players[team].push(player);
+  renderTable(team);
+}
+
+function renderTable(team) {
+  const tbody = document.getElementById(team + "Stats");
+  tbody.innerHTML = "";
+  const totals = Object.fromEntries([...statKeys, "totalpoints"].map(k => [k, 0]));
+
+  players[team].forEach((player, rowIndex) => {
+    const tr = document.createElement("tr");
+
+    const nameTd = document.createElement("td");
+    nameTd.textContent = player.name;
+    tr.appendChild(nameTd);
+
+    statKeys.forEach(stat => {
+      const td = document.createElement("td");
+      const container = document.createElement("div");
+      container.className = "button-container";
+
+      const dec = document.createElement("button");
+      dec.textContent = "-";
+      dec.onclick = () => {
+        if (player[stat] > 0) player[stat]--;
+        player.totalPoints = calculateTotalPoints(player);
+        renderTable(team);
+        updateSummary();
+      };
+
+      const val = document.createElement("span");
+      val.textContent = player[stat];
+
+      const inc = document.createElement("button");
+      inc.textContent = "+";
+      inc.onclick = () => {
+        player[stat]++;
+        player.totalPoints = calculateTotalPoints(player);
+        renderTable(team);
+        updateSummary();
+      };
+
+      container.appendChild(dec);
+      container.appendChild(val);
+      container.appendChild(inc);
+      td.appendChild(container);
+      tr.appendChild(td);
+
+      totals[stat] += player[stat];
+    });
+
+    
+    const tpMakes = player["2pm"];
+    const tpAttempts = tpMakes + player["2pmissed"];
+    const tpPct = tpAttempts ? (tpMakes / tpAttempts * 100).toFixed(1) + "%" : "0%";
+
+    const tp3Attempts = player["3pm"] + player["3pmissed"];
+    const tp3Pct = tp3Attempts ? (player["3pm"] / tp3Attempts * 100).toFixed(1) + "%" : "0%";
+
+    const fgMakes = player["2pm"] + player["3pm"];
+    const fgAttempts = fgMakes + player["2pmissed"] + player["3pmissed"];
+    const fgPct = fgAttempts ? (fgMakes / fgAttempts * 100).toFixed(1) + "%" : "0%";
+
+    const ftAttempts = player["ftm"] + player["ftmissed"];
+    const ftPct = ftAttempts ? (player["ftm"] / ftAttempts * 100).toFixed(1) + "%" : "0%";
+
+    const twopTd = document.createElement("td");
+    twopTd.textContent = tpPct;
+    tr.appendChild(twopTd);
+
+    const threepTd = document.createElement("td");
+    threepTd.textContent = tp3Pct;
+    tr.appendChild(threepTd);
+
+    const fgTd = document.createElement("td");
+    fgTd.textContent = fgPct;
+    tr.appendChild(fgTd);
+
+    const ftpTd = document.createElement("td");
+    ftpTd.textContent = ftPct;
+    tr.appendChild(ftpTd);
+
+const totalTd = document.createElement("td");
+    totalTd.textContent = player.totalPoints;
+    tr.appendChild(totalTd);
+    totals["totalpoints"] += player.totalPoints;
+
+    tbody.appendChild(tr);
+  });
+
+  // Update column totals
+  statKeys.forEach(stat => {
+    document.getElementById("t-" + team + "-" + stat).textContent = totals[stat];
+  });
+  
+  const tpMakes = totals["2pm"];
+  const tpAttempts = tpMakes + totals["2pmissed"];
+  const tpPct = tpAttempts ? (tpMakes / tpAttempts * 100).toFixed(1) + "%" : "0%";
+
+  const tp3Attempts = totals["3pm"] + totals["3pmissed"];
+  const tp3Pct = tp3Attempts ? (totals["3pm"] / tp3Attempts * 100).toFixed(1) + "%" : "0%";
+
+  const fgMakes = totals["2pm"] + totals["3pm"];
+  const fgAttempts = fgMakes + totals["2pmissed"] + totals["3pmissed"];
+  const fgPct = fgAttempts ? (fgMakes / fgAttempts * 100).toFixed(1) + "%" : "0%";
+
+  const ftAttempts = totals["ftm"] + totals["ftmissed"];
+  const ftPct = ftAttempts ? (totals["ftm"] / ftAttempts * 100).toFixed(1) + "%" : "0%";
+
+  document.getElementById("t-" + team + "-2ppct").textContent = tpPct;
+  document.getElementById("t-" + team + "-3ppct").textContent = tp3Pct;
+  document.getElementById("t-" + team + "-fgpct").textContent = fgPct;
+  document.getElementById("t-" + team + "-ftpct").textContent = ftPct;
+
+  document.getElementById("t-" + team + "-totalpoints").textContent = totals["totalpoints"];
+}
+
+renderTable('home'); renderTable('opponent');
+
+function adjustZoom(step) {
+  const body = document.body;
+  const style = window.getComputedStyle(body);
+  const currentZoom = parseFloat(style.zoom || 1);
+  body.style.zoom = currentZoom + step;
+}
+
+function updateSummary() {
+  const home = players.home.reduce((sum, p) => sum + p.totalPoints, 0);
+  const opp = players.opponent.reduce((sum, p) => sum + p.totalPoints, 0);
+  document.getElementById("homeScore").textContent = home;
+  document.getElementById("opponentScore").textContent = opp;
+}
+
+
+renderTable("home");
+renderTable("opponent");
+updateSummary();
+
+function exportCSV() {
+  const headers = [
+    "Player", "2PM", "2PMissed", "3PM", "3PMissed", "FTM", "FTMissed",
+    "OREB", "DREB", "STL", "BLK", "TO", "Fouls", "Assists",
+    "TotalPoints", "2P%", "3P%", "FG%", "FT%"
+  ];
+  const rows = [headers.join(",")];
+
+  players.home.forEach(p => {
+    const fgMakes = p["2pm"] + p["3pm"];
+    const fgAttempts = fgMakes + p["2pmissed"] + p["3pmissed"];
+    const tpPct = (p["2pm"] + p["2pmissed"]) ? ((p["2pm"] / (p["2pm"] + p["2pmissed"])) * 100).toFixed(1) + "%" : "0%";
+    const tp3Pct = (p["3pm"] + p["3pmissed"]) ? ((p["3pm"] / (p["3pm"] + p["3pmissed"])) * 100).toFixed(1) + "%" : "0%";
+    const fgPct = fgAttempts ? ((fgMakes / fgAttempts) * 100).toFixed(1) + "%" : "0%";
+    const ftPct = (p["ftm"] + p["ftmissed"]) ? ((p["ftm"] / (p["ftm"] + p["ftmissed"])) * 100).toFixed(1) + "%" : "0%";
+
+    const row = [
+      p.name, p["2pm"], p["2pmissed"], p["3pm"], p["3pmissed"], p["ftm"], p["ftmissed"],
+      p["oreb"], p["dreb"], p["stl"], p["blk"], p["to"], p["fouls"], p["assists"],
+      p.totalPoints, tpPct, tp3Pct, fgPct, ftPct
+    ];
+    rows.push(row.join(","));
+  });
+
+  const blob = new Blob([rows.join("\n")], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "home_team_stats.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+
+function exportOpponentCSV() {
+  const headers = [
+    "Player", "2PM", "2PMissed", "3PM", "3PMissed", "FTM", "FTMissed",
+    "OREB", "DREB", "STL", "BLK", "TO", "Fouls", "Assists",
+    "TotalPoints", "2P%", "3P%", "FG%", "FT%"
+  ];
+  const rows = [headers.join(",")];
+
+  players.opponent.forEach(p => {
+    const fgMakes = p["2pm"] + p["3pm"];
+    const fgAttempts = fgMakes + p["2pmissed"] + p["3pmissed"];
+    const tpPct = (p["2pm"] + p["2pmissed"]) ? ((p["2pm"] / (p["2pm"] + p["2pmissed"])) * 100).toFixed(1) + "%" : "0%";
+    const tp3Pct = (p["3pm"] + p["3pmissed"]) ? ((p["3pm"] / (p["3pm"] + p["3pmissed"])) * 100).toFixed(1) + "%" : "0%";
+    const fgPct = fgAttempts ? ((fgMakes / fgAttempts) * 100).toFixed(1) + "%" : "0%";
+    const ftPct = (p["ftm"] + p["ftmissed"]) ? ((p["ftm"] / (p["ftm"] + p["ftmissed"])) * 100).toFixed(1) + "%" : "0%";
+
+    const row = [
+      p.name, p["2pm"], p["2pmissed"], p["3pm"], p["3pmissed"], p["ftm"], p["ftmissed"],
+      p["oreb"], p["dreb"], p["stl"], p["blk"], p["to"], p["fouls"], p["assists"],
+      p.totalPoints, tpPct, tp3Pct, fgPct, ftPct
+    ];
+    rows.push(row.join(","));
+  });
+
+  const blob = new Blob([rows.join("\n")], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "opponent_team_stats.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+
+function exportCombinedCSV() {
+  const headers = [
+    "Player", "Team", "2PM", "2PMissed", "3PM", "3PMissed", "FTM", "FTMissed",
+    "OREB", "DREB", "STL", "BLK", "TO", "Fouls", "Assists",
+    "TotalPoints", "2P%", "3P%", "FG%", "FT%"
+  ];
+  const rows = [headers.join(",")];
+
+  ["home", "opponent"].forEach(team => {
+    players[team].forEach(p => {
+      const fgMakes = p["2pm"] + p["3pm"];
+      const fgAttempts = fgMakes + p["2pmissed"] + p["3pmissed"];
+      const tpPct = (p["2pm"] + p["2pmissed"]) ? ((p["2pm"] / (p["2pm"] + p["2pmissed"])) * 100).toFixed(1) + "%" : "0%";
+      const tp3Pct = (p["3pm"] + p["3pmissed"]) ? ((p["3pm"] / (p["3pm"] + p["3pmissed"])) * 100).toFixed(1) + "%" : "0%";
+      const fgPct = fgAttempts ? ((fgMakes / fgAttempts) * 100).toFixed(1) + "%" : "0%";
+      const ftPct = (p["ftm"] + p["ftmissed"]) ? ((p["ftm"] / (p["ftm"] + p["ftmissed"])) * 100).toFixed(1) + "%" : "0%";
+
+      const row = [
+        p.name, team.toUpperCase(), p["2pm"], p["2pmissed"], p["3pm"], p["3pmissed"], p["ftm"], p["ftmissed"],
+        p["oreb"], p["dreb"], p["stl"], p["blk"], p["to"], p["fouls"], p["assists"],
+        p.totalPoints, tpPct, tp3Pct, fgPct, ftPct
+      ];
+      rows.push(row.join(","));
+    });
+  });
+
+  const blob = new Blob([rows.join("\n")], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "all_team_stats.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+
+function resetStats() {
+  ['home', 'opponent'].forEach(team => {
+    players[team].forEach(p => {
+      Object.keys(p).forEach(k => {
+        if (k !== "name") {
+          p[k] = (typeof p[k] === "number") ? 0 : p[k];
+        }
+      });
+    });
+  });
+  renderTable("home");
+  renderTable("opponent");
+  updateSummary();
+}
+
+</script>
+
+
+
+
+<script>
+function openBoxScore() {
+  const headers = ["Player", "FG", "FG%", "3PT", "3PT%", "FT", "FT%", "OREB", "DREB", "REB", "AST", "STL", "BLK", "TO", "PF", "PTS"];
+  const fg = p => p["2pm"] + p["3pm"] + "-" + (p["2pm"] + p["3pm"] + p["2pmissed"] + p["3pmissed"]);
+  const tp3 = p => p["3pm"] + "-" + (p["3pm"] + p["3pmissed"]);
+  const ft = p => p["ftm"] + "-" + (p["ftm"] + p["ftmissed"]);
+  const pct = (made, att) => att ? Math.round((made / att) * 100) + "%" : "0%";
+  const reb = p => p["oreb"] + p["dreb"];
+
+  let html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Box Score</title>
+      <style>
+        body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+        h2 { color: #c8102e; font-size: 24px; border-bottom: 2px solid #c8102e; margin-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; background: #fff; }
+        th, td { padding: 8px; border: 1px solid #ddd; text-align: center; font-size: 14px; }
+        th { background: #efefef; font-weight: bold; }
+        td:first-child { text-align: left; font-weight: 500; }
+      </style>
+    </head>
+    <body>
+      <h2>Team Takeover – Box Score</h2>
+      <table><thead><tr>${headers.map(h => "<th>" + h + "</th>").join("")}</tr></thead><tbody>`;
+
+  players.home.forEach(p => {
+    const fgAtt = p["2pm"] + p["2pmissed"] + p["3pm"] + p["3pmissed"];
+    const tp3Att = p["3pm"] + p["3pmissed"];
+    const ftAtt = p["ftm"] + p["ftmissed"];
+    html += "<tr>";
+    html += "<td>" + p.name + "</td>";
+    html += "<td>" + fg(p) + "</td>";
+    html += "<td>" + pct(p["2pm"] + p["3pm"], fgAtt) + "</td>";
+    html += "<td>" + tp3(p) + "</td>";
+    html += "<td>" + pct(p["3pm"], tp3Att) + "</td>";
+    html += "<td>" + ft(p) + "</td>";
+    html += "<td>" + pct(p["ftm"], ftAtt) + "</td>";
+    html += "<td>" + p["oreb"] + "</td>";
+    html += "<td>" + p["dreb"] + "</td>";
+    html += "<td>" + reb(p) + "</td>";
+    html += "<td>" + p["assists"] + "</td>";
+    html += "<td>" + p["stl"] + "</td>";
+    html += "<td>" + p["blk"] + "</td>";
+    html += "<td>" + p["to"] + "</td>";
+    html += "<td>" + p["fouls"] + "</td>";
+    html += "<td>" + p.totalPoints + "</td>";
+    html += "</tr>";
+  });
+
+  const w = window.open("", "_blank");
+  w.document.write(html + "</tbody></table></body></html>");
+  w.document.close();
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  const allButtons = document.querySelectorAll("button");
+  const resetBtn = Array.from(allButtons).find(b => b.textContent.includes("Reset All Stats"));
+  if (resetBtn) {
+    const boxBtn = document.createElement("button");
+    boxBtn.textContent = "BOX SCORE";
+    boxBtn.style.marginLeft = "8px";
+    boxBtn.onclick = openBoxScore;
+    resetBtn.insertAdjacentElement("afterend", boxBtn);
+  }
+});
+</script>
+
+</body>
+</html>
